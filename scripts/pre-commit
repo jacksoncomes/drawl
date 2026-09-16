@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# pre-commit — block conversational register from entering the repository.
+#
+# Enforces the hard filter (SKILL.md section 0): text that is not a chat message
+# to the user contains no dialect. A commit is not a chat message.
+#
+# Install:
+#   cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+# Bypass (for the one case in a hundred where the check is wrong):
+#   git commit --no-verify
+#
+# Bypassing routinely defeats the purpose. If the check is wrong often, fix the
+# detectors in scripts/check-egress.py rather than the habit.
+
+set -e
+
+PY=""
+for candidate in python3 python py; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+        PY="$candidate"
+        break
+    fi
+done
+
+if [ -z "$PY" ]; then
+    echo "pre-commit: no python interpreter found; skipping egress check." >&2
+    exit 0
+fi
+
+HOOK_DIR=$(dirname "$0")
+REPO_ROOT=$(git rev-parse --show-toplevel)
+CHECKER="$REPO_ROOT/scripts/check-egress.py"
+
+if [ ! -f "$CHECKER" ]; then
+    echo "pre-commit: scripts/check-egress.py not found; skipping." >&2
+    exit 0
+fi
+
+exec "$PY" "$CHECKER" --quiet
