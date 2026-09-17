@@ -42,6 +42,7 @@ EXEMPT_PREFIXES = (
 )
 EXEMPT_FILES = {
     "SKILL.md",
+    "core.md",
     "README.md",
     "INSTALL.md",
     "CHANGELOG.md",

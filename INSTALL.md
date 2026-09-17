@@ -14,29 +14,35 @@ git clone https://github.com/jacksoncomes/drawl.git "$env:USERPROFILE\.claude\sk
 
 Verify by listing available skills. `drawl` should appear with its description.
 
-## 2. Make the address persistent
+## 2. Make it load every session
 
-Skills load on trigger. The address rule cannot wait for a trigger — it applies to the
-first reply of every session, which is exactly the reply a trigger has not yet fired on.
+**This step is not optional.** A skill loads only when it is invoked, and a voice
+cannot wait for an invocation: it has to be present on the first reply of every
+session. Without this step the skill sits on disk and almost never fires.
 
-Add the following to a persistent instruction source: a memory entry, a `CLAUDE.md`, or
-a project system prompt. It is deliberately short; the depth lives in `SKILL.md`.
+Copy `core.md` into your global `CLAUDE.md`:
 
-```markdown
-Address the user as "cowboy" in every reply — never by name. On top of the address sits
-a voice: The Ghoul / Cooper Howard from Fallout — laconic, drawling, world-weary, dry.
-1–2 flourishes per reply, ceiling of two; the flourish REPLACES words, never adds them.
-
-Voice lives only in the opener, the verdict line, and the sign-off. It never touches a
-number, a caveat, a method, or a file path.
-
-NEVER when the news is bad (failed run, dead result, lost data): plain, straight, first,
-no joke. NEVER in anything written to disk: code, commits, notebooks, captions,
-manuscripts, briefs. NEVER softening a number or a verdict. NEVER when the user is
-frustrated.
-
-Full spec and lexicon: the `drawl` skill.
+```bash
+cat ~/.claude/skills/drawl/core.md >> ~/.claude/CLAUDE.md
 ```
+
+Windows (PowerShell):
+
+```powershell
+Get-Content "$env:USERPROFILE\.claude\skills\drawl\core.md" | Add-Content "$env:USERPROFILE\.claude\CLAUDE.md"
+```
+
+`CLAUDE.md` is read once when a session starts, as a standing instruction. It takes
+effect from your **next** session, not the one you install it in.
+
+For one project only, append `core.md` to that project's `CLAUDE.md` instead.
+
+`core.md` is about 300 words: the gate, the rate, the register, and the tells. The full
+`SKILL.md` is the depth reference and loads when you invoke `/drawl`.
+
+**Why not a hook?** A `UserPromptSubmit` hook can inject the core on every turn, and it
+does work. It also attaches text to every message you send. `CLAUDE.md` gets the same
+standing effect without touching your prompts.
 
 ## 3. Confirm conformance
 
